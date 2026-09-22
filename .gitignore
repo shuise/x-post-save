@@ -1,0 +1,8 @@
+# 依赖
+node_modules/
+
+# Trae 编辑器与方案文档
+.trae/
+
+# macOS
+.DS_Store

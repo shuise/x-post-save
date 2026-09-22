@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title>小蜜蜂 · 任务面板</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="task">
+    <header class="task__head">
+      <img src="icons/32.png" alt="" />
+      <div>
+        <h1>小蜜蜂</h1>
+        <p class="hint">X 点赞批量下载</p>
+      </div>
+      <div class="spacer"></div>
+      <span class="badge" id="state-badge">空闲</span>
+    </header>
+
+    <div id="pause-banner" hidden>
+      <span id="pause-text"></span>
+      <div class="spacer"></div>
+      <button class="btn btn--primary" id="btn-reauth">重新授权</button>
+      <button class="btn btn--danger" id="btn-abort">中止</button>
+    </div>
+
+    <section class="section">
+      <h2>输出目录</h2>
+      <div class="section__row">
+        <span class="kv">目标：<strong>/Volumes/LaCie/x-medias</strong></span>
+        <span class="badge" id="dir-badge">未授权</span>
+      </div>
+      <div class="section__row">
+        <button class="btn" id="btn-pick">选择目录</button>
+        <span class="hint" id="dir-hint"
+          >提示：可直接选中 LaCie 盘，插件会在其中创建 x-medias</span
+        >
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>一、扫描点赞页</h2>
+      <div class="section__row">
+        <button class="btn btn--primary" id="btn-scan">开始扫描</button>
+        <button class="btn" id="btn-scan-pause" disabled>暂停</button>
+        <button class="btn" id="btn-scan-stop" disabled>停止</button>
+      </div>
+      <div class="section__row">
+        <span class="kv">已捕获：<strong id="scan-count">0</strong> 条</span>
+        <span class="kv">新增：<strong id="scan-fresh">0</strong></span>
+      </div>
+      <div class="section__row">
+        <p class="hint hint--warn">
+          扫描期间请保持点赞页标签页为当前标签页，且不要切换或关闭它，否则页面不会继续加载。
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>二、下载并写盘</h2>
+      <div class="section__row">
+        <button class="btn btn--primary" id="btn-download" disabled>开始下载</button>
+        <button class="btn" id="btn-download-pause" disabled>暂停</button>
+      </div>
+      <div class="section__row">
+        <span class="kv">进度：<strong id="dl-progress">0 / 0</strong></span>
+        <span class="kv">已完成：<strong id="dl-done">0</strong></span>
+        <span class="kv">跳过：<strong id="dl-skipped">0</strong></span>
+        <span class="kv">失败：<strong id="dl-failed">0</strong></span>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>三、取消点赞</h2>
+      <div class="section__row">
+        <button class="btn" id="btn-unlike-dry">干跑（不点击）</button>
+        <button class="btn btn--primary" id="btn-unlike" disabled>开始取消</button>
+        <button class="btn" id="btn-unlike-stop" disabled>停止</button>
+      </div>
+      <div class="section__row">
+        <span class="kv">待取消：<strong id="unlike-pending">0</strong></span>
+        <span class="kv">已取消：<strong id="unlike-done">0</strong></span>
+        <span class="kv">未确认：<strong id="unlike-unknown">0</strong></span>
+      </div>
+      <div class="section__row">
+        <p class="hint">
+          仅对下载成功的推文取消点赞；单次运行上限 300 条，遇到限流会自行退避或暂停。
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>报告</h2>
+      <div class="section__row">
+        <button class="btn" id="btn-export">导出报告与账本</button>
+        <span class="hint" id="export-hint"></span>
+      </div>
+    </section>
+
+    <div id="log"></div>
+
+    <!-- 按钮点击失败时的浮层提示，固定在窗口最底部 -->
+    <div id="toast-host" aria-live="polite"></div>
+
+    <script type="module" src="task.js"></script>
+  </body>
+</html>
