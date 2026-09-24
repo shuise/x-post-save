@@ -68,6 +68,26 @@ var inbox = {
   }
 };
 
+// src/shared/paths.ts
+var TIME_ZONE = "Asia/Shanghai";
+var CARD_APP_URL = "https://note-card-mauve.vercel.app/";
+var PINYIN_APP_URL = "https://pinyin-annotator.tjsky.net/pinyin";
+var CARD_TEXT_KEY = "pendingCardText";
+var PINYIN_TEXT_KEY = "pendingPinyinText";
+var dateFmt = new Intl.DateTimeFormat("en-CA", {
+  timeZone: TIME_ZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit"
+});
+var timeFmt = new Intl.DateTimeFormat("en-GB", {
+  timeZone: TIME_ZONE,
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false
+});
+
 // src/shared/protocol.ts
 var KIND = {
   BATCH: "BEE_BATCH",
@@ -90,6 +110,48 @@ function nowIso() {
 
 // src/background/service-worker.ts
 var TASK_PAGE = "task.html";
+var TEXT_MENUS = [
+  { id: "bee-note-card", title: "\u751F\u6210\u5361\u7247", url: CARD_APP_URL, key: CARD_TEXT_KEY },
+  { id: "bee-pinyin", title: "\u6CE8\u97F3", url: PINYIN_APP_URL, key: PINYIN_TEXT_KEY }
+];
+function setupContextMenus() {
+  chrome.contextMenus.removeAll(() => {
+    for (const menu of TEXT_MENUS) {
+      chrome.contextMenus.create({
+        id: menu.id,
+        title: menu.title,
+        contexts: ["selection"]
+      });
+    }
+  });
+}
+async function sendTextToApp(url, key, text) {
+  await chrome.storage.local.set({ [key]: text });
+  let existing;
+  try {
+    [existing] = await chrome.tabs.query({ url: `${new URL(url).origin}/*` });
+  } catch {
+  }
+  if (existing?.id !== void 0) {
+    try {
+      await chrome.tabs.update(existing.id, { active: true });
+      if (typeof existing.windowId === "number") {
+        await chrome.windows.update(existing.windowId, { focused: true });
+      }
+      await chrome.tabs.reload(existing.id);
+      return;
+    } catch {
+    }
+  }
+  await chrome.tabs.create({ url, active: true });
+}
+chrome.contextMenus.onClicked.addListener((info) => {
+  const menu = TEXT_MENUS.find((m) => m.id === info.menuItemId);
+  if (!menu) return;
+  const text = info.selectionText?.trim();
+  if (!text) return;
+  void sendTextToApp(menu.url, menu.key, text);
+});
 async function notifyBadge(text, color) {
   try {
     await chrome.action.setBadgeText({ text });
@@ -173,5 +235,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   return true;
 });
 chrome.runtime.onInstalled.addListener(() => {
+  setupContextMenus();
   void notifyBadge("", "#f2a413");
 });
+setupContextMenus();

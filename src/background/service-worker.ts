@@ -1,4 +1,10 @@
 import { inbox } from '../shared/db';
+import {
+  CARD_APP_URL,
+  CARD_TEXT_KEY,
+  PINYIN_APP_URL,
+  PINYIN_TEXT_KEY,
+} from '../shared/paths';
 import { KIND, MSG_OPEN_TASK, isRuntimeMsg, type RuntimeMsg } from '../shared/protocol';
 import { nowIso } from '../shared/util';
 
@@ -8,6 +14,68 @@ import { nowIso } from '../shared/util';
  */
 
 const TASK_PAGE = 'task.html';
+
+/* ---------------- 选中文字的右键菜单 ---------------- */
+
+/**
+ * 两个目标站都没有「从 URL 读文本」的入口，所以文字塞不进地址栏：
+ * 先放进 chrome.storage.local，再由目标页的 inject-text.js 取出来写进输入框。
+ */
+const TEXT_MENUS = [
+  { id: 'bee-note-card', title: '生成卡片', url: CARD_APP_URL, key: CARD_TEXT_KEY },
+  { id: 'bee-pinyin', title: '注音', url: PINYIN_APP_URL, key: PINYIN_TEXT_KEY },
+];
+
+function setupContextMenus(): void {
+  // 先清再建：扩展重载后 id 会重复，直接 create 会报 duplicate id
+  chrome.contextMenus.removeAll(() => {
+    for (const menu of TEXT_MENUS) {
+      chrome.contextMenus.create({
+        id: menu.id,
+        title: menu.title,
+        contexts: ['selection'],
+      });
+    }
+  });
+}
+
+/**
+ * 文字交接给目标页。
+ * 已有该页面就复用并重载 —— 重载才会重跑内容脚本，否则它读不到新文字。
+ */
+async function sendTextToApp(url: string, key: string, text: string): Promise<void> {
+  await chrome.storage.local.set({ [key]: text });
+
+  let existing: chrome.tabs.Tab | undefined;
+  try {
+    [existing] = await chrome.tabs.query({ url: `${new URL(url).origin}/*` });
+  } catch {
+    /* 查询失败就退化成新建标签 */
+  }
+
+  if (existing?.id !== undefined) {
+    try {
+      await chrome.tabs.update(existing.id, { active: true });
+      if (typeof existing.windowId === 'number') {
+        await chrome.windows.update(existing.windowId, { focused: true });
+      }
+      await chrome.tabs.reload(existing.id);
+      return;
+    } catch {
+      /* 标签可能已被关掉，继续走新建 */
+    }
+  }
+
+  await chrome.tabs.create({ url, active: true });
+}
+
+chrome.contextMenus.onClicked.addListener((info) => {
+  const menu = TEXT_MENUS.find((m) => m.id === info.menuItemId);
+  if (!menu) return;
+  const text = info.selectionText?.trim();
+  if (!text) return;
+  void sendTextToApp(menu.url, menu.key, text);
+});
 
 async function notifyBadge(text: string, color: string): Promise<void> {
   try {
@@ -118,5 +186,9 @@ chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) =
 });
 
 chrome.runtime.onInstalled.addListener(() => {
+  setupContextMenus();
   void notifyBadge('', '#f2a413');
 });
+
+// 右键菜单不跨 service worker 生命周期保留，每次启动都重建一次
+setupContextMenus();

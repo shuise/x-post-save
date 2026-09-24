@@ -24,12 +24,14 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "permissions": ["storage", "unlimitedStorage"],
+  "permissions": ["storage", "unlimitedStorage", "contextMenus"],
   "host_permissions": [
     "https://x.com/*",
     "https://twitter.com/*",
     "https://pbs.twimg.com/*",
-    "https://video.twimg.com/*"
+    "https://video.twimg.com/*",
+    "https://note-card-mauve.vercel.app/*",
+    "https://pinyin-annotator.tjsky.net/*"
   ],
   "content_scripts": [
     {
@@ -44,6 +46,15 @@
       "js": ["isolated.js"],
       "run_at": "document_idle",
       "world": "ISOLATED",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "https://note-card-mauve.vercel.app/*",
+        "https://pinyin-annotator.tjsky.net/*"
+      ],
+      "js": ["inject-text.js"],
+      "run_at": "document_idle",
       "all_frames": false
     }
   ]

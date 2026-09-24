@@ -8,6 +8,18 @@ export const TZ_OFFSET = '+08:00';
 export const CHECK_FILE = '.bee-check';
 /** X 点赞页路径。任务页要用它定位标签页，内容脚本要用它判断当前页，放这里避免两处硬编码。 */
 export const LIKES_PAGE_PATH = '/i/history/likes';
+/**
+ * 文字卡片应用。
+ * 它没有 URL 参数入口（文本只来自自己的 localStorage 或那个受控 textarea），
+ * 所以选中文字要靠 chrome.storage 交接给内容脚本，塞不进地址栏。
+ */
+export const CARD_APP_URL = 'https://note-card-mauve.vercel.app/';
+/** 拼音注音小助手（tjsky 开源的单文件纯前端工具）。同样没有传文本的 URL 参数，URL 上只有版本选择。 */
+export const PINYIN_APP_URL = 'https://pinyin-annotator.tjsky.net/pinyin';
+
+/** service worker 写入、目标页内容脚本读取后删除的交接 key。 */
+export const CARD_TEXT_KEY = 'pendingCardText';
+export const PINYIN_TEXT_KEY = 'pendingPinyinText';
 export const BEE_DIR = '_bee';
 /** 所有推文的附件统一放在这一个目录下，文件名带推文 ID 前缀避免互相覆盖。 */
 export const ASSETS_DIR = 'assets';

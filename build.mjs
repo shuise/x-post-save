@@ -54,6 +54,12 @@ async function main() {
     }),
     build({
       ...shared,
+      entryPoints: [path.join(ROOT, 'src/content/inject-text.ts')],
+      outfile: path.join(OUT, 'inject-text.js'),
+      format: 'iife',
+    }),
+    build({
+      ...shared,
       entryPoints: [path.join(ROOT, 'src/background/service-worker.ts')],
       outfile: path.join(OUT, 'background.js'),
       format: 'esm',

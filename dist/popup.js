@@ -4,7 +4,7 @@ import {
   humanBytes,
   tweets,
   unlikeCandidates
-} from "./chunks/chunk-3NOL42CI.js";
+} from "./chunks/chunk-GKJZADDG.js";
 
 // src/popup/popup.ts
 function stats() {

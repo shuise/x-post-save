@@ -29,7 +29,7 @@ import {
   sleep,
   tweets,
   unlikeCandidates
-} from "./chunks/chunk-3NOL42CI.js";
+} from "./chunks/chunk-GKJZADDG.js";
 
 // src/page/fs.ts
 var PICKER_ID = "x-medias-root";
